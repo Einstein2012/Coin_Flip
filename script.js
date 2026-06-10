@@ -20,39 +20,32 @@ const tailsPctEl  = document.getElementById('tails-pct');
 
 // ── Flip ───────────────────────────────────────────────────────
 function flip() {
-  if (state.isFlipping) return;
-  state.isFlipping = true;
-  flipBtn.disabled = true;
+    if (state.isFlipping) return;
+    state.isFlipping = true;
+    flipBtn.disabled = true;
 
-  const result = Math.random() < 0.5 ? 'H' : 'T';
-  const fullResult = result === 'H' ? 'Heads' : 'Tails';
+    const result = Math.random() < 0.5 ? 'H' : 'T';
+    const fullResult = result === 'H' ? 'Heads' : 'Tails';
 
-  coin.classList.remove('flipping-heads', 'flipping-tails', 'result-heads', 'result-tails');
-  coin.style.transform = '';
-  void coin.offsetWidth;
-
-  coin.classList.add(result === 'H' ? 'flipping-heads' : 'flipping-tails');
-
-  setTimeout(() => {
+    // Reset animation
     coin.classList.remove('flipping-heads', 'flipping-tails');
-    // Directly set the transform so the correct face is always visible
-    coin.style.transform = result === 'H' ? 'rotateY(0deg)' : 'rotateY(180deg)';
+    coin.style.transform = '';
+    void coin.offsetWidth;
 
-    state.history.push(result);
-    state.lastResult = fullResult;
-    updateStats();
+    // Play the correct animation
+    coin.classList.add(result === 'H' ? 'flipping-heads' : 'flipping-tails');
 
-    state.isFlipping = false;
-    flipBtn.disabled = false;
-  }, 700);
-}
-// Heads or Tails, but always lands on the correct face without relying on animation timing.
-const coinLetter = document.getElementById('coin-letter');
+    setTimeout(() => {
+        // End on the correct face
+        coin.style.transform = result === 'H' ? 'rotateY(0deg)' : 'rotateY(180deg)';
 
-if (result === 'heads') {
-  coinLetter.textContent = 'H';
-} else {
-  coinLetter.textContent = 'T';
+        state.history.push(result);
+        state.lastResult = fullResult;
+        updateStats();
+
+        state.isFlipping = false;
+        flipBtn.disabled = false;
+    }, 700);
 }
 
 
