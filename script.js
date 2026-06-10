@@ -24,29 +24,41 @@ function flip() {
     state.isFlipping = true;
     flipBtn.disabled = true;
 
+    // Random result
     const result = Math.random() < 0.5 ? 'H' : 'T';
     const fullResult = result === 'H' ? 'Heads' : 'Tails';
 
-    // Reset animation
-    coin.classList.remove('flipping-heads', 'flipping-tails');
+    // Reset animation classes
+    coin.classList.remove('flipping-heads', 'flipping-tails', 'result-heads', 'result-tails');
     coin.style.transform = '';
-    void coin.offsetWidth;
+    void coin.offsetWidth; // forces reflow so animation restarts
 
-    // Play the correct animation
+    // Play the correct flip animation
     coin.classList.add(result === 'H' ? 'flipping-heads' : 'flipping-tails');
 
+    // After animation finishes…
     setTimeout(() => {
-        // End on the correct face
-        coin.style.transform = result === 'H' ? 'rotateY(0deg)' : 'rotateY(180deg)';
+        // Remove animation classes
+        coin.classList.remove('flipping-heads', 'flipping-tails');
 
+        // Add the correct resting class so the right face shows
+        if (result === 'H') {
+            coin.classList.add('result-heads');
+        } else {
+            coin.classList.add('result-tails');
+        }
+
+        // Update stats
         state.history.push(result);
         state.lastResult = fullResult;
         updateStats();
 
+        // Unlock flipping
         state.isFlipping = false;
         flipBtn.disabled = false;
-    }, 700);
+    }, 700); // matches your --flip-duration
 }
+
 
 
 // ── Stats ──────────────────────────────────────────────────────
