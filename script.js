@@ -1,24 +1,51 @@
-/**
- * Coin Flip — script.js
- * Handles flipping logic, animation, stats, and TTS.
- */
-
-// ── State ──────────────────────────────────────────────────────
+// State
 const state = {
-  history: [],       // full history of results ('H' | 'T')
-  isFlipping: false,
-  lastResult: null,  // 'Heads' | 'Tails'
+    isFlipping: false,
+    history: [],
+    lastResult: null
 };
 
-// ── DOM References ─────────────────────────────────────────────
-const coin        = document.getElementById('coin');
-const flipBtn     = document.getElementById('flip-btn');
-const speakBtn    = document.getElementById('speak-btn');
-const lastFiveEl  = document.getElementById('last-five-results');
-const headsPctEl  = document.getElementById('heads-pct');
-const tailsPctEl  = document.getElementById('tails-pct');
+// Elements
+const coin = document.getElementById('coin');
+const flipBtn = document.getElementById('flip-btn');
+const speakBtn = document.getElementById('speak-btn');
 
-// ── Flip ───────────────────────────────────────────────────────
+const lastFiveContainer = document.getElementById('last-five');
+const headsPct = document.getElementById('heads-pct');
+const tailsPct = document.getElementById('tails-pct');
+
+// --- Update Stats ---
+function updateStats() {
+    // Last 5 results
+    lastFiveContainer.innerHTML = '';
+    const lastFive = state.history.slice(-5);
+
+    lastFive.forEach(r => {
+        const pill = document.createElement('div');
+        pill.className = `pill pill-${r}`;
+        pill.textContent = r;
+        lastFiveContainer.appendChild(pill);
+    });
+
+    // Percentages
+    const total = state.history.length;
+    const headsCount = state.history.filter(r => r === 'H').length;
+    const tailsCount = total - headsCount;
+
+    headsPct.textContent = total ? Math.round((headsCount / total) * 100) + '%' : '0%';
+    tailsPct.textContent = total ? Math.round((tailsCount / total) * 100) + '%' : '0%';
+}
+
+// --- Speak Result ---
+function speakResult() {
+    if (!state.lastResult) return;
+    const msg = new SpeechSynthesisUtterance(state.lastResult);
+    msg.rate = 1;
+    msg.pitch = 1;
+    speechSynthesis.speak(msg);
+}
+
+// --- Flip ---
 function flip() {
     if (state.isFlipping) return;
     state.isFlipping = true;
@@ -31,17 +58,17 @@ function flip() {
     // Reset animation classes
     coin.classList.remove('flipping-heads', 'flipping-tails', 'result-heads', 'result-tails');
     coin.style.transform = '';
-    void coin.offsetWidth; // forces reflow so animation restarts
+    void coin.offsetWidth; // restart animation
 
-    // Play the correct flip animation
+    // Play correct animation
     coin.classList.add(result === 'H' ? 'flipping-heads' : 'flipping-tails');
 
-    // After animation finishes…
+    // After animation finishes
     setTimeout(() => {
         // Remove animation classes
         coin.classList.remove('flipping-heads', 'flipping-tails');
 
-        // Add the correct resting class so the right face shows
+        // Add correct resting class
         if (result === 'H') {
             coin.classList.add('result-heads');
         } else {
@@ -53,77 +80,19 @@ function flip() {
         state.lastResult = fullResult;
         updateStats();
 
-        // Unlock flipping
+        // Unlock
         state.isFlipping = false;
         flipBtn.disabled = false;
-    }, 700); // matches your --flip-duration
+    }, 700); // matches CSS --flip-duration
 }
 
-
-
-// ── Stats ──────────────────────────────────────────────────────
-function updateStats() {
-  const { history } = state;
-
-  // Last 5 pills
-  const last5 = history.slice(-5);
-  if (last5.length === 0) {
-    lastFiveEl.textContent = '—';
-  } else {
-    lastFiveEl.innerHTML = last5
-      .map(r => `<span class="pill pill-${r}">${r}</span>`)
-      .join('');
-  }
-
-  // Percentages
-  if (history.length === 0) {
-    headsPctEl.textContent = '—';
-    tailsPctEl.textContent = '—';
-  } else {
-    const heads = history.filter(r => r === 'H').length;
-    const tails = history.length - heads;
-    const hp = ((heads / history.length) * 100).toFixed(1);
-    const tp = ((tails / history.length) * 100).toFixed(1);
-    headsPctEl.textContent = `${hp}%`;
-    tailsPctEl.textContent = `${tp}%`;
-  }
-}
-
-// ── Text-to-Speech ─────────────────────────────────────────────
-function speakResult() {
-  if (!state.lastResult) {
-    speak('No result yet. Press Flip to get started.');
-    return;
-  }
-  speak(`${state.lastResult}!`);
-}
-
-function speak(text) {
-  if (!('speechSynthesis' in window)) {
-    alert('Sorry, your browser does not support text-to-speech.');
-    return;
-  }
-  // Cancel any ongoing speech
-  window.speechSynthesis.cancel();
-
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.rate = 0.95;
-  utterance.pitch = 1.05;
-  window.speechSynthesis.speak(utterance);
-}
-
-// ── Event Listeners ────────────────────────────────────────────
+// --- Event Listeners ---
 flipBtn.addEventListener('click', flip);
 speakBtn.addEventListener('click', speakResult);
 
-// Allow spacebar / Enter on the flip button (default for <button>, but
-// also catch keyboard events on the coin wrapper for accessibility)
+// Space / Enter to flip
 document.addEventListener('keydown', (e) => {
-  if ((e.code === 'Space' || e.code === 'Enter') && e.target === document.body) {
-    e.preventDefault();
-    flip();
-  }
+    if (e.code === 'Space' || e.code === 'Enter') {
+        flip();
+    }
 });
-
-// ── Init ───────────────────────────────────────────────────────
-updateStats();
