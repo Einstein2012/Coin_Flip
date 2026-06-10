@@ -46,6 +46,15 @@ function flip() {
     flipBtn.disabled = false;
   }, 700);
 }
+// Heads or Tails, but always lands on the correct face without relying on animation timing.
+const coinLetter = document.getElementById('coin-letter');
+
+if (result === 'heads') {
+  coinLetter.textContent = 'H';
+} else {
+  coinLetter.textContent = 'T';
+}
+
 
 // ── Stats ──────────────────────────────────────────────────────
 function updateStats() {
